@@ -89,20 +89,24 @@ fun saveGasStation(context: Context, gas_station: gasStation){
     editor.apply()
 }
 
-fun getGasStationJSON(context: Context): gasStation{
-    val sharedFileName="lastGasStationJSON"
-    var shared_pref: SharedPreferences = context.getSharedPreferences(sharedFileName, Context.MODE_PRIVATE)
-    lateinit var gas_station: gasStation
-    var aux: String
-    if(shared_pref!=null) {
-        //Lendo bytes serializados
-        aux = shared_pref.getString("gasJSON", "").toString()
-        Log.v("PDM25",aux)
-        //lendo
-        gas_station = jsonToGasStation(JSONObject(aux))
+fun getGasStationJSON(context: Context): gasStation? {
+    val prefs = context.getSharedPreferences(
+        "lastGasStationJSON",
+        Context.MODE_PRIVATE
+    )
 
+    val jsonString = prefs.getString("gasJSON", null)
+        ?: return null
+
+    if (jsonString.isBlank()) return null
+
+    return try {
+        jsonToGasStation(JSONObject(jsonString))
+    } catch (e: Exception) {
+        Log.e("GasStation", "Failed to load JSON", e)
+        null
     }
-    return gas_station}
+}
 
 
 fun gasStationToJson(gas_station: gasStation) : JSONObject {
